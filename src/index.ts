@@ -1,7 +1,8 @@
-import { AIMessage, BaseMessage, HumanMessage } from "@langchain/core/messages";
+import type { AIMessage, BaseMessage } from "@langchain/core/messages";
+import { HumanMessage } from "@langchain/core/messages";
 import { tool } from "@langchain/core/tools";
 import { z } from "zod";
-import { ChatAnthropic } from "@langchain/anthropic";
+import { ChatOpenAI } from "@langchain/openai";
 import { StateGraph } from "@langchain/langgraph";
 import { MemorySaver, Annotation } from "@langchain/langgraph";
 import { ToolNode } from "@langchain/langgraph/prebuilt";
@@ -38,8 +39,9 @@ const weatherTool = tool(
 const tools = [weatherTool];
 const toolNode = new ToolNode(tools);
 
-const model = new ChatAnthropic({
-    model: "claude-3-5-sonnet-20240620",
+const model = new ChatOpenAI({
+    model: "gpt-4o-mini",
+    openAIApiKey: process.env.OPENAI_API_KEY,
     temperature: 0,
 }).bindTools(tools);
 
@@ -53,6 +55,7 @@ function shouldContinue(state: typeof StateAnnotation.State) {
     if (lastMessage.tool_calls?.length) {
         return "tools";
     }
+
     // Otherwise, we stop (reply to the user)
     return "__end__";
 }

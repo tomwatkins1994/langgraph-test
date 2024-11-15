@@ -4,6 +4,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
+    "dev": "pnpm run with-env tsx watch src/index.ts",
     "ci": "pnpm run check-format && pnpm run lint && pnpm run test",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -11,7 +12,8 @@
     "lint": "biome lint ./src",
     "lint:fix": "biome lint --write ./src",
     "format": "biome format --write ./src",
-    "check-format": "biome format ./src"
+    "check-format": "biome format ./src",
+    "with-env": "dotenv -e .env --"
   },
   "keywords": [],
   "author": "",
@@ -27,6 +29,7 @@
     "@biomejs/biome": "^1.9.4",
     "@vitest/ui": "^2.1.5",
     "dotenv-cli": "^7.4.2",
+    "tsx": "^4.19.2",
     "vitest": "^2.1.5"
   },
   "resolutions": {
