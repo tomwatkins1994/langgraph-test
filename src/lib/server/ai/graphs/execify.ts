@@ -10,12 +10,15 @@ import { pull } from "langchain/hub";
 import type { ChatPromptTemplate } from "@langchain/core/prompts";
 import { env } from "$env/dynamic/private";
 import { pgCheckpointer } from "../pg-peristance";
+import type { DocumentInterface } from "@langchain/core/documents";
 
 const StateAnnotation = Annotation.Root({
     messages: Annotation<BaseMessage[]>({
         reducer: (x, y) => x.concat(y),
     }),
-    documents: Annotation<string[]>({
+    question: Annotation<string>(),
+    // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+    documents: Annotation<DocumentInterface<Record<string, any>>[]>({
         reducer: (x, y) => x.concat(y),
     }),
 });
@@ -38,30 +41,37 @@ const model = new ChatOpenAI({
     temperature: 0,
 });
 
-async function callModel(state: typeof StateAnnotation.State) {
+async function retrieverNode(state: typeof StateAnnotation.State) {
     const question = state.messages[state.messages.length - 1]?.content;
     if (!question) {
         return {};
     }
 
+    const retrievedDocs = await retriever.invoke(String(question));
+
+    return { documents: retrievedDocs, question };
+}
+
+async function generateNode(state: typeof StateAnnotation.State) {
     const prompt = await pull<ChatPromptTemplate>("rlm/rag-prompt");
     const ragChain = await createStuffDocumentsChain({
         llm: model,
         prompt,
         outputParser: new StringOutputParser(),
     });
-    const retrievedDocs = await retriever.invoke(String(question));
     const response = await ragChain.invoke({
-        question,
-        context: retrievedDocs,
+        question: state.question,
+        context: state.documents,
     });
 
     return { messages: [new AIMessage(response)] };
 }
 
 const workflow = new StateGraph(StateAnnotation)
-    .addNode("agent", callModel)
-    .addEdge(START, "agent")
-    .addEdge("agent", END);
+    .addNode("retriever", retrieverNode)
+    .addNode("generate", generateNode)
+    .addEdge(START, "retriever")
+    .addEdge("retriever", "generate")
+    .addEdge("generate", END);
 
 export const graph = workflow.compile({ checkpointer: pgCheckpointer });
