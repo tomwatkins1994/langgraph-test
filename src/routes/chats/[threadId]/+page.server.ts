@@ -22,12 +22,14 @@ export const load: PageServerLoad = async ({ params }) => {
         state.values.messages?.map((message: BaseMessage) => {
             if (message instanceof HumanMessage) {
                 return {
+                    id: message.id,
                     role: "user",
                     content: message.content,
                 };
             }
             if (message instanceof AIMessage) {
                 return {
+                    id: message.id,
                     role: "assistant",
                     content: message.content,
                 };

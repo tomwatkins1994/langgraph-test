@@ -11,10 +11,12 @@ export const POST: RequestHandler = async ({ request, params }) => {
             { configurable: { thread_id: params.threadId } }
         );
 
+        const newMessage = finalState.messages[finalState.messages.length - 1];
+
         return new Response(
             JSON.stringify({
-                reply: finalState.messages[finalState.messages.length - 1]
-                    .content,
+                id: newMessage.id,
+                reply: newMessage.content,
             }),
             { status: 200 }
         );
