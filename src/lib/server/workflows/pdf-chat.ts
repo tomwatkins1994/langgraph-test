@@ -2,7 +2,7 @@ import { AIMessage, type BaseMessage } from "@langchain/core/messages";
 import { MemoryVectorStore } from "langchain/vectorstores/memory";
 import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import { ChatOpenAI, OpenAIEmbeddings } from "@langchain/openai";
-import { StateGraph } from "@langchain/langgraph";
+import { END, START, StateGraph } from "@langchain/langgraph";
 import { MemorySaver, Annotation } from "@langchain/langgraph";
 import { createStuffDocumentsChain } from "langchain/chains/combine_documents";
 import { StringOutputParser } from "@langchain/core/output_parsers";
@@ -60,8 +60,8 @@ async function callModel(state: typeof StateAnnotation.State) {
 
 const workflow = new StateGraph(StateAnnotation)
     .addNode("agent", callModel)
-    .addEdge("__start__", "agent")
-    .addEdge("agent", "__end__");
+    .addEdge(START, "agent")
+    .addEdge("agent", END);
 
 const checkpointer = new MemorySaver();
 
