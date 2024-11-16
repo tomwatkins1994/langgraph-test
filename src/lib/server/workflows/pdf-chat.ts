@@ -64,4 +64,6 @@ const workflow = new StateGraph(StateAnnotation)
     .addEdge(START, "agent")
     .addEdge("agent", END);
 
+await pgCheckpointer.setup();
+
 export const app = workflow.compile({ checkpointer: pgCheckpointer });
