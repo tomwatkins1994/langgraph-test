@@ -7,8 +7,12 @@ html, body {
     height: 100%
 }
 
-body.dark {
-    @apply bg-slate-900 text-white;
+body {
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    &.dark {
+        @apply bg-slate-900 text-white;
+    }
 }
 
 input[type="text"] {

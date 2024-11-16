@@ -33,7 +33,7 @@ async function sendMessage() {
         <div class="flex flex-col gap-2 p-2">
             {#each messages as { content, role }, i}
               <div class="message-container {role}">
-                <div class="message p-2 border rounded-lg max-w-[75%] border-none">{content}</div>
+                <div class="message p-2 border rounded-lg max-w-[75%] border-none text-sm">{content}</div>
               </div>
             {/each}
           </div>
