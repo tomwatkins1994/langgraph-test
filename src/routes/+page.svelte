@@ -5,7 +5,7 @@ import type { PageData } from "./$types";
 let { data }: { data: PageData } = $props();
 let { threads } = data;
 
-let newThreadName = "";
+let newThreadName = $state("");
 
 async function createThread() {
 	const response = await fetch("/api/chat/new", {
@@ -26,9 +26,9 @@ async function createThread() {
             type="text" 
             class="w-full border rounded-sm p-2" 
             bind:value={newThreadName}
-            on:keydown={(e) => e.key === 'Enter' && createThread()}
+            onkeydown={(e) => e.key === 'Enter' && createThread()}
             placeholder="Enter a chat name" />
-        <button on:click={createThread}>Create</button>
+        <button onclick={createThread}>Create</button>
     </div>
     <div>OR Continue a chat</div>
     <div class="flex-1">

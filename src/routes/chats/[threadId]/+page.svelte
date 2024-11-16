@@ -3,14 +3,15 @@ import type { PageData } from "./$types";
 
 let { data }: { data: PageData } = $props();
 
-let userMessage = "";
-let messages = data.messages;
+let userMessage = $state("");
+let messages = $state(data.messages);
 
 async function sendMessage() {
 	if (userMessage.trim() === "") return;
 
 	// Add the user's message to the chat
-	messages = [...messages, { content: userMessage, role: "user" }];
+	messages.push({ content: userMessage, role: "user" });
+	userMessage = "";
 
 	// Send the message to the backend
 	const response = await fetch("/api/chat", {
@@ -21,8 +22,7 @@ async function sendMessage() {
 	const data = await response.json();
 
 	// Add the response to the chat
-	messages = [...messages, { content: data.reply, role: "assistant" }];
-	userMessage = "";
+	messages.push({ content: data.reply, role: "assistant" });
 }
 </script>
 
@@ -39,8 +39,8 @@ async function sendMessage() {
             type="text" 
             class="w-full border rounded-sm p-2" 
             bind:value={userMessage}
-            on:keydown={(e) => e.key === 'Enter' && sendMessage()}
+            onkeydown={(e) => e.key === 'Enter' && sendMessage()}
             placeholder="Type your message..." />
-        <button on:click={sendMessage}>Send</button>
+        <button onclick={sendMessage}>Send</button>
     </div>
 </div>
