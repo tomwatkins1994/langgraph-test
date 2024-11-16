@@ -9,6 +9,7 @@ import { StringOutputParser } from "@langchain/core/output_parsers";
 import { pull } from "langchain/hub";
 import type { ChatPromptTemplate } from "@langchain/core/prompts";
 import { env } from "$env/dynamic/private";
+import { pgCheckpointer } from "./pg-peristance";
 
 const StateAnnotation = Annotation.Root({
     messages: Annotation<BaseMessage[]>({
@@ -63,6 +64,4 @@ const workflow = new StateGraph(StateAnnotation)
     .addEdge(START, "agent")
     .addEdge("agent", END);
 
-const checkpointer = new MemorySaver();
-
-export const app = workflow.compile({ checkpointer });
+export const app = workflow.compile({ checkpointer: pgCheckpointer });
