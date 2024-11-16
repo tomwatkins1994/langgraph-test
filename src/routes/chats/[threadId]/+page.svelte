@@ -10,7 +10,7 @@ async function sendMessage() {
 	if (userMessage.trim() === "") return;
 
 	// Add the user's message to the chat
-	messages = [...messages, { conent: userMessage, role: "user" }];
+	messages = [...messages, { content: userMessage, role: "user" }];
 
 	// Send the message to the backend
 	const response = await fetch("/api/chat", {
@@ -21,7 +21,7 @@ async function sendMessage() {
 	const data = await response.json();
 
 	// Add the response to the chat
-	messages = [...messages, { conent: data.reply, role: "assistant" }];
+	messages = [...messages, { content: data.reply, role: "assistant" }];
 	userMessage = "";
 }
 </script>
