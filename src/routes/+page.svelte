@@ -20,7 +20,8 @@ async function createThread() {
 }
 </script>
 
-<div class="h-full flex flex-col p-2">
+<div class="h-full flex flex-col p-2 gap-2">
+    <div class="w-full text-center py-2">Start a chat</div>
     <div class="flex gap-2">
         <input 
             type="text" 
@@ -35,7 +36,7 @@ async function createThread() {
         <div class="flex flex-col gap-2">
             {#each threads as { id, name }, i}
                 <a href="/chats/{id}">
-                    <div class="w-full p-2 border rounded-sm hover:bg-slate-300">{name}</div>
+                    <div class="w-full p-2 rounded-sm bg-slate-100 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600">{name}</div>
                 </a>
             {/each}
           </div>
