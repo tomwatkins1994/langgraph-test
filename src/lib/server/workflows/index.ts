@@ -1,5 +1,5 @@
 import { HumanMessage } from "@langchain/core/messages";
-import { app } from "./workflows/pdf-chat.js";
+import { app } from "./pdf-chat.js";
 
 // Use the Runnable
 const finalState = await app.invoke(
