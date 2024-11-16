@@ -34,5 +34,5 @@ export const load: PageServerLoad = async ({ params }) => {
             }
         }) || [];
 
-    return { messages };
+    return { threadId: params.threadId, messages };
 };

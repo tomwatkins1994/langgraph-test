@@ -5,6 +5,7 @@ let { data }: { data: PageData } = $props();
 
 let userMessage = $state("");
 let messages = $state(data.messages);
+let { threadId } = data;
 
 async function sendMessage() {
 	if (userMessage.trim() === "") return;
@@ -14,7 +15,7 @@ async function sendMessage() {
 	userMessage = "";
 
 	// Send the message to the backend
-	const response = await fetch("/api/chat", {
+	const response = await fetch(`/api/chat/${threadId}`, {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify({ message: userMessage }),
