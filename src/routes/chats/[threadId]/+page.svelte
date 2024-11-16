@@ -2,13 +2,15 @@
 import type { PageData } from "./$types";
 
 let { data }: { data: PageData } = $props();
+let { thread } = data;
 
 let userMessage = $state("");
 let messages = $state(data.messages);
-let { thread } = data;
+let loading = $state(false);
 
 async function sendMessage() {
 	if (userMessage.trim() === "") return;
+	loading = true;
 	const message = userMessage;
 
 	// Add the user's message to the chat
@@ -25,6 +27,7 @@ async function sendMessage() {
 
 	// Add the response to the chat
 	messages.push({ content: data.reply, role: "assistant" });
+	loading = false;
 }
 </script>
 
@@ -48,8 +51,9 @@ async function sendMessage() {
             class="w-full border rounded-sm p-2" 
             bind:value={userMessage}
             onkeydown={(e) => e.key === 'Enter' && sendMessage()}
-            placeholder="Type your message..." />
-        <button onclick={sendMessage}>Send</button>
+            placeholder="Type your message..."
+        />
+        <button onclick={sendMessage} disabled={loading}>Send</button>
     </div>
 </div>
 
