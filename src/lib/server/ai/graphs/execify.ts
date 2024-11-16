@@ -27,6 +27,15 @@ const StateAnnotation = Annotation.Root({
             return x.concat(y);
         },
     }),
+    // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+    relevantDocuments: Annotation<DocumentInterface<Record<string, any>>[]>({
+        reducer: (x, y) => {
+            if (y === null) {
+                return [];
+            }
+            return x.concat(y);
+        },
+    }),
 });
 
 const model = new ChatOpenAI({
@@ -51,7 +60,7 @@ const pdfRetriever = vectorStore.asRetriever();
 
 async function pdfRetrieverNode(state: typeof StateAnnotation.State) {
     console.log("Searching PDFs", { docs: state.documents.length });
-    const retrievedDocs = await pdfRetriever.invoke(String(state.question));
+    const retrievedDocs = await pdfRetriever.invoke(state.question);
 
     return { documents: retrievedDocs };
 }
