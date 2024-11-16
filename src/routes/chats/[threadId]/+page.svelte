@@ -9,6 +9,7 @@ let { threadId } = data;
 
 async function sendMessage() {
 	if (userMessage.trim() === "") return;
+	const message = userMessage;
 
 	// Add the user's message to the chat
 	messages.push({ content: userMessage, role: "user" });
@@ -18,7 +19,7 @@ async function sendMessage() {
 	const response = await fetch(`/api/chat/${threadId}`, {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify({ message: userMessage }),
+		body: JSON.stringify({ message }),
 	});
 	const data = await response.json();
 
@@ -28,10 +29,12 @@ async function sendMessage() {
 </script>
 
 <div class="h-full flex flex-col">
-    <div class="flex-1">
-        <div class="chat-messages">
+    <div class="flex-1 overflow-auto">
+        <div class="flex flex-col gap-2 p-2">
             {#each messages as { content, role }, i}
-              <div class="message {role}">{content}</div>
+              <div class="message-container {role}">
+                <div class="message p-2 border rounded-lg max-w-[75%]">{content}</div>
+              </div>
             {/each}
           </div>
     </div>
@@ -45,3 +48,20 @@ async function sendMessage() {
         <button onclick={sendMessage}>Send</button>
     </div>
 </div>
+
+<style>
+  .message-container {
+    display: flex;
+    &.user {
+      @apply justify-end;
+      > .message {
+        @apply bg-green-500 text-white;
+      }
+    }
+    &.assistant {
+      > .message {
+        @apply bg-slate-500 text-white;
+      }
+    }
+  }
+</style>
