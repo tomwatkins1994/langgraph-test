@@ -1,16 +1,14 @@
 import { AIMessage, type BaseMessage } from "@langchain/core/messages";
 import { MemoryVectorStore } from "langchain/vectorstores/memory";
 import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
-import { tool } from "@langchain/core/tools";
-import { z } from "zod";
 import { ChatOpenAI, OpenAIEmbeddings } from "@langchain/openai";
 import { StateGraph } from "@langchain/langgraph";
 import { MemorySaver, Annotation } from "@langchain/langgraph";
-import { ToolNode } from "@langchain/langgraph/prebuilt";
 import { createStuffDocumentsChain } from "langchain/chains/combine_documents";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { pull } from "langchain/hub";
 import type { ChatPromptTemplate } from "@langchain/core/prompts";
+import { env } from "$env/dynamic/private";
 
 const StateAnnotation = Annotation.Root({
     messages: Annotation<BaseMessage[]>({
@@ -26,13 +24,16 @@ const docs = await loader.load();
 
 const vectorStore = await MemoryVectorStore.fromDocuments(
     docs,
-    new OpenAIEmbeddings({ model: "text-embedding-3-small" })
+    new OpenAIEmbeddings({
+        model: "text-embedding-3-small",
+        openAIApiKey: env.OPENAI_API_KEY,
+    })
 );
 const retriever = vectorStore.asRetriever();
 
 const model = new ChatOpenAI({
     model: "gpt-4o-mini",
-    openAIApiKey: process.env.OPENAI_API_KEY,
+    openAIApiKey: env.OPENAI_API_KEY,
     temperature: 0,
 });
 
