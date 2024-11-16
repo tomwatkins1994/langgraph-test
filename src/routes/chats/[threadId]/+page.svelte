@@ -5,7 +5,7 @@ let { data }: { data: PageData } = $props();
 
 let userMessage = $state("");
 let messages = $state(data.messages);
-let { threadId } = data;
+let { thread } = data;
 
 async function sendMessage() {
 	if (userMessage.trim() === "") return;
@@ -16,7 +16,7 @@ async function sendMessage() {
 	userMessage = "";
 
 	// Send the message to the backend
-	const response = await fetch(`/api/chat/${threadId}`, {
+	const response = await fetch(`/api/chat/${thread.id}`, {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify({ message }),
@@ -27,6 +27,10 @@ async function sendMessage() {
 	messages.push({ content: data.reply, role: "assistant" });
 }
 </script>
+
+<svelte:head>
+  <title>{thread.name}</title>
+</svelte:head>
 
 <div class="h-full flex flex-col">
     <div class="flex-1 overflow-auto">
