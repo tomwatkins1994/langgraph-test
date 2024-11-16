@@ -12,6 +12,7 @@ import type { ChatPromptTemplate } from "@langchain/core/prompts";
 import { env } from "$env/dynamic/private";
 import { pgCheckpointer } from "../pg-peristance";
 import { Document, type DocumentInterface } from "@langchain/core/documents";
+import { documentGraderGraph } from "./document-grader";
 
 const StateAnnotation = Annotation.Root({
     messages: Annotation<BaseMessage[]>({
@@ -21,10 +22,14 @@ const StateAnnotation = Annotation.Root({
     // biome-ignore lint/suspicious/noExplicitAny: <explanation>
     documents: Annotation<DocumentInterface<Record<string, any>>[]>({
         reducer: (x, y) => {
+            let docs = x;
+            if (x === null) {
+                docs = [];
+            }
             if (y === null) {
                 return [];
             }
-            return x.concat(y);
+            return docs.concat(y);
         },
     }),
     // biome-ignore lint/suspicious/noExplicitAny: <explanation>
@@ -36,6 +41,7 @@ const StateAnnotation = Annotation.Root({
             return x.concat(y);
         },
     }),
+    webSearched: Annotation<boolean>(),
 });
 
 const model = new ChatOpenAI({
@@ -59,7 +65,7 @@ const vectorStore = await MemoryVectorStore.fromDocuments(
 const pdfRetriever = vectorStore.asRetriever();
 
 async function pdfRetrieverNode(state: typeof StateAnnotation.State) {
-    console.log("Searching PDFs", { docs: state.documents.length });
+    console.log("Searching PDFs");
     const retrievedDocs = await pdfRetriever.invoke(state.question);
 
     return { documents: retrievedDocs };
@@ -73,9 +79,8 @@ const tavilySearch = new TavilySearchResults({
 });
 
 async function webSearchNode(state: typeof StateAnnotation.State) {
-    console.log("Searching the web", { docs: state.documents.length });
+    console.log("Searching the web");
     const retrievedDocs = await tavilySearch.invoke(state.question);
-    console.log({ retrievedDocs });
     const documents = (
         (JSON.parse(retrievedDocs) as {
             title: string;
@@ -92,7 +97,7 @@ async function webSearchNode(state: typeof StateAnnotation.State) {
         });
     });
 
-    return { documents };
+    return { documents, webSearched: true };
 }
 
 async function getQuestionNode(state: typeof StateAnnotation.State) {
@@ -101,7 +106,24 @@ async function getQuestionNode(state: typeof StateAnnotation.State) {
         return {};
     }
 
-    return { question, documents: null };
+    return {
+        question,
+        documents: null,
+        relevantDocuments: null,
+        webSearched: false,
+    };
+}
+
+async function needsMoreContent(state: typeof StateAnnotation.State) {
+    console.log("Checking if we have relevant documents", {
+        relevantDocuments: state.relevantDocuments?.length,
+        webSearched: state.webSearched,
+    });
+    if (state.relevantDocuments?.length > 0 || state.webSearched) {
+        return "generate";
+    }
+
+    return "web_search";
 }
 
 async function generateNode(state: typeof StateAnnotation.State) {
@@ -111,10 +133,13 @@ async function generateNode(state: typeof StateAnnotation.State) {
         prompt,
         outputParser: new StringOutputParser(),
     });
-    console.log("Generate", { docs: state.documents.length });
+    console.log("Generate", {
+        docs: state.documents?.length,
+        relevantDocs: state.relevantDocuments?.length,
+    });
     const response = await ragChain.invoke({
         question: state.question,
-        context: state.documents,
+        context: state.relevantDocuments || [],
     });
 
     return { messages: [new AIMessage(response)] };
@@ -123,12 +148,14 @@ async function generateNode(state: typeof StateAnnotation.State) {
 const workflow = new StateGraph(StateAnnotation)
     .addNode("get_question", getQuestionNode)
     .addNode("retriever", pdfRetrieverNode)
+    .addNode("document_grader", documentGraderGraph)
     .addNode("web_search", webSearchNode)
     .addNode("generate", generateNode)
     .addEdge(START, "get_question")
     .addEdge("get_question", "retriever")
-    .addEdge("retriever", "web_search")
-    .addEdge("web_search", "generate")
+    .addEdge("retriever", "document_grader")
+    .addConditionalEdges("document_grader", needsMoreContent)
+    .addEdge("web_search", "document_grader")
     .addEdge("generate", END);
 
 export const graph = workflow.compile({ checkpointer: pgCheckpointer });
