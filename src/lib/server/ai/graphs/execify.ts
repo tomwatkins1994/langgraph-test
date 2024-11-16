@@ -66,18 +66,25 @@ const tavilySearch = new TavilySearchResults({
 async function webSearchNode(state: typeof StateAnnotation.State) {
     console.log("Searching the web", { docs: state.documents.length });
     const retrievedDocs = await tavilySearch.invoke(state.question);
-    const webResults = JSON.parse(retrievedDocs)
-        ?.map((doc: unknown) => {
-            // @ts-ignore
-            return doc.content || "";
-        })
-        .join("\n");
+    console.log({ retrievedDocs });
+    const documents = (
+        (JSON.parse(retrievedDocs) as {
+            title: string;
+            url: string;
+            content: string;
+        }[]) || []
+    ).map(doc => {
+        return new Document({
+            pageContent: doc.content,
+            metadata: {
+                title: doc.title,
+                url: doc.url,
+            },
+        });
+    });
 
-    const document = new Document({ pageContent: webResults });
-    return { documents: [document] };
+    return { documents };
 }
-
-// tool.iv;
 
 async function getQuestionNode(state: typeof StateAnnotation.State) {
     const question = state.messages[state.messages.length - 1]?.content;
