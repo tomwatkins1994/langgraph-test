@@ -1,10 +1,19 @@
-// import { error } from "@sveltejs/kit";
+import { error } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 import { app } from "$lib/server/workflows/pdf-chat";
 import type { BaseMessage } from "@langchain/core/messages";
 import { AIMessage, HumanMessage } from "@langchain/core/messages";
+import { db, schema } from "$lib/server/db";
+import { eq } from "drizzle-orm";
 
 export const load: PageServerLoad = async ({ params }) => {
+    const thread = await db.query.threads.findFirst({
+        where: eq(schema.threads.id, params.threadId),
+    });
+    if (!thread) {
+        error(404, "Not found");
+    }
+
     const state = await app.getState({
         configurable: { thread_id: params.threadId },
     });
@@ -25,6 +34,4 @@ export const load: PageServerLoad = async ({ params }) => {
     });
 
     return { messages };
-
-    // error(404, "Not found");
 };
