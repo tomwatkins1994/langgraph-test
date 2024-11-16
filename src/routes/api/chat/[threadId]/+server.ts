@@ -5,7 +5,6 @@ import type { RequestHandler } from "@sveltejs/kit";
 export const POST: RequestHandler = async ({ request, params }) => {
     try {
         const { message } = await request.json();
-        console.log(params);
 
         const finalState = await app.invoke(
             { messages: [new HumanMessage(message)] },
