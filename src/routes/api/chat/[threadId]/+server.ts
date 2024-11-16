@@ -1,4 +1,4 @@
-import { app } from "$lib/server/workflows/pdf-chat";
+import { graph } from "$lib/server/ai/graphs/execify";
 import { HumanMessage } from "@langchain/core/messages";
 import type { RequestHandler } from "@sveltejs/kit";
 
@@ -6,7 +6,7 @@ export const POST: RequestHandler = async ({ request, params }) => {
     try {
         const { message } = await request.json();
 
-        const finalState = await app.invoke(
+        const finalState = await graph.invoke(
             { messages: [new HumanMessage(message)] },
             { configurable: { thread_id: params.threadId } }
         );
