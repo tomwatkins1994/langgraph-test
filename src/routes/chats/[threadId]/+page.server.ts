@@ -18,20 +18,21 @@ export const load: PageServerLoad = async ({ params }) => {
         configurable: { thread_id: params.threadId },
     });
 
-    const messages = state.values.messages.map((message: BaseMessage) => {
-        if (message instanceof HumanMessage) {
-            return {
-                role: "user",
-                content: message.content,
-            };
-        }
-        if (message instanceof AIMessage) {
-            return {
-                role: "assistant",
-                content: message.content,
-            };
-        }
-    });
+    const messages =
+        state.values.messages?.map((message: BaseMessage) => {
+            if (message instanceof HumanMessage) {
+                return {
+                    role: "user",
+                    content: message.content,
+                };
+            }
+            if (message instanceof AIMessage) {
+                return {
+                    role: "assistant",
+                    content: message.content,
+                };
+            }
+        }) || [];
 
     return { messages };
 };
