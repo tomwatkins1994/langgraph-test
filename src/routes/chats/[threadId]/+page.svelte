@@ -1,5 +1,7 @@
 <script lang="ts">
 import type { PageData } from "./$types";
+import { SendIcon } from "lucide-svelte";
+import LoadingIcon from "$lib/components/LoadingIcon.svelte";
 
 let { data }: { data: PageData } = $props();
 let { thread } = data;
@@ -53,7 +55,13 @@ async function sendMessage() {
             onkeydown={(e) => e.key === 'Enter' && sendMessage()}
             placeholder="Type your message..."
         />
-        <button onclick={sendMessage} disabled={loading}>Send</button>
+        <button onclick={sendMessage} disabled={loading}>
+          {#if loading}
+            <LoadingIcon />
+          {:else}
+            <SendIcon />
+          {/if}
+        </button>
     </div>
 </div>
 
