@@ -1,6 +1,6 @@
 import { error } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
-import { graph } from "$lib/server/ai/graphs/execify";
+import { execifyGraph } from "$lib/server/ai/graphs/execify";
 import type { BaseMessage } from "@langchain/core/messages";
 import { AIMessage, HumanMessage } from "@langchain/core/messages";
 import { db, schema } from "$lib/server/db";
@@ -14,7 +14,7 @@ export const load: PageServerLoad = async ({ params }) => {
         error(404, "Not found");
     }
 
-    const state = await graph.getState({
+    const state = await execifyGraph.getState({
         configurable: { thread_id: params.threadId },
     });
 

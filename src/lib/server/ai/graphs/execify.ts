@@ -158,4 +158,4 @@ const workflow = new StateGraph(StateAnnotation)
     .addEdge("web_search", "document_grader")
     .addEdge("generate", END);
 
-export const graph = workflow.compile({ checkpointer: pgCheckpointer });
+export const execifyGraph = workflow.compile({ checkpointer: pgCheckpointer });
