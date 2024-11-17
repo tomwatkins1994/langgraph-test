@@ -4,7 +4,6 @@ import { PromptTemplate } from "@langchain/core/prompts";
 import { RunnableSequence } from "@langchain/core/runnables";
 import { Annotation, END, Send, START, StateGraph } from "@langchain/langgraph";
 import { ChatOpenAI } from "@langchain/openai";
-import { StructuredOutputParser } from "langchain/output_parsers";
 import { z } from "zod";
 
 const StateAnnotation = Annotation.Root({
@@ -46,12 +45,14 @@ async function graderNode(state: typeof DocumentState.State) {
         `,
         inputVariables: ["question", "text"],
     });
-    const outputParser = StructuredOutputParser.fromZodSchema(
-        z.object({
-            score: z.enum(["yes", "no"]),
-        })
-    );
-    const chain = RunnableSequence.from([prompt, llm, outputParser]);
+    const chain = RunnableSequence.from([
+        prompt,
+        llm.withStructuredOutput(
+            z.object({
+                score: z.enum(["yes", "no"]),
+            })
+        ),
+    ]);
     const response = await chain.invoke({
         question: state.question,
         text: state.document.pageContent,
