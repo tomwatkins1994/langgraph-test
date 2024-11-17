@@ -1,7 +1,9 @@
 <script lang="ts">
 import type { PageData } from "./$types";
+import { onMount } from "svelte";
 import { SendIcon } from "lucide-svelte";
 import LoadingIcon from "$lib/components/LoadingIcon.svelte";
+import { scrollToBottom } from "$lib/utils/scroll-to-bottom";
 
 let { data }: { data: PageData } = $props();
 let { thread } = data;
@@ -9,6 +11,26 @@ let { thread } = data;
 let userMessage = $state("");
 let messages = $state(data.messages);
 let loading = $state(false);
+let scrollContainer: HTMLDivElement | null = null;
+
+onMount(() => {
+	scrollToLastMessage();
+});
+
+function scrollToLastMessage() {
+	if (scrollContainer) {
+		scrollContainer.scrollTop = scrollContainer.scrollHeight;
+	}
+}
+
+function messageRendered() {
+	scrollToLastMessage();
+	return {
+		update() {
+			scrollToLastMessage();
+		},
+	};
+}
 
 async function sendMessage() {
 	if (userMessage.trim() === "") return;
@@ -38,10 +60,10 @@ async function sendMessage() {
 </svelte:head>
 
 <div class="h-full flex flex-col">
-    <div class="flex-1 overflow-auto">
+    <div bind:this={scrollContainer} class="flex-1 overflow-auto">
         <div class="flex flex-col gap-2 p-2">
             {#each messages as { content, role }, i}
-              <div class="message-container {role}">
+              <div use:messageRendered class="message-container {role}">
                 <div class="message p-2 border rounded-lg max-w-[75%] border-none text-sm">{content}</div>
               </div>
             {/each}
