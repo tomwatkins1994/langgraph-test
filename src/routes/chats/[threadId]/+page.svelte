@@ -76,7 +76,7 @@ async function sendMessage() {
 
 <div class="h-full flex flex-col">
     <div bind:this={scrollContainer} class="flex-1 overflow-auto">
-        <div class="flex flex-col gap-2 p-2">
+        <div class="flex flex-col gap-2 p-4">
             {#each messages as { content, role }, i}
               <div use:messageRendered class="message-container {role}">
                 <div class="message p-2 border rounded-lg max-w-[75%] border-none text-sm">{content}</div>
