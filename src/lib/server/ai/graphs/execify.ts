@@ -129,7 +129,9 @@ async function needsMoreContent(state: typeof StateAnnotation.State) {
 async function generateNode(state: typeof StateAnnotation.State) {
     const prompt = await pull<ChatPromptTemplate>("rlm/rag-prompt");
     const ragChain = await createStuffDocumentsChain({
-        llm: model,
+        llm: model.withConfig({
+            tags: ["final_node"],
+        }),
         prompt,
         outputParser: new StringOutputParser(),
     });

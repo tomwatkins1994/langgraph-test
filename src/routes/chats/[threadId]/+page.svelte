@@ -3,7 +3,6 @@ import type { PageData } from "./$types";
 import { onMount } from "svelte";
 import { SendIcon } from "lucide-svelte";
 import LoadingIcon from "$lib/components/LoadingIcon.svelte";
-import { scrollToBottom } from "$lib/utils/scroll-to-bottom";
 
 let { data }: { data: PageData } = $props();
 let { thread } = data;
@@ -23,7 +22,7 @@ function scrollToLastMessage() {
 	}
 }
 
-function messageRendered() {
+function messageRendered(_: HTMLElement) {
 	scrollToLastMessage();
 	return {
 		update() {
@@ -47,10 +46,26 @@ async function sendMessage() {
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify({ message }),
 	});
-	const data = await response.json();
 
-	// Add the response to the chat
-	messages.push({ content: data.reply, role: "assistant" });
+	let newMessage = $state({ content: "", role: "assistant" });
+	messages.push(newMessage);
+
+	const reader = response.body?.getReader();
+	const decoder = new TextDecoder();
+	let done = false;
+
+	while (!done) {
+		const { value, done: doneReading } = (await reader?.read()) || {
+			value: null,
+			done: true,
+		};
+    if (value) {
+      newMessage.content += decoder.decode(value, { stream: true });
+      scrollToLastMessage();
+    }
+		done = doneReading;
+	}
+
 	loading = false;
 }
 </script>
