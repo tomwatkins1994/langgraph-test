@@ -76,7 +76,7 @@ async function graderNode(
 
 // Conditional Edges
 
-function gradeDocuments(state: typeof StateAnnotation.State) {
+function gradeDocuments(state: typeof StateAnnotation.State): Send[] {
     const nodes = state.documents.map(document => {
         return new Send("grader", { document, question: state.question });
     });
