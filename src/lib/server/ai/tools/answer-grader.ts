@@ -32,7 +32,7 @@ const chain = RunnableSequence.from([
     ),
 ]);
 
-export async function answerGrader(question: string, answer: string) {
+export async function gradeAnswer(question: string, answer: string) {
     const response = await chain.invoke({
         question,
         answer,
@@ -43,7 +43,7 @@ export async function answerGrader(question: string, answer: string) {
 
 export const answerGraderTool = tool(
     async ({ question, answer }) => {
-        const { score } = await answerGrader(question, answer);
+        const { score } = await gradeAnswer(question, answer);
         return score;
     },
     {
