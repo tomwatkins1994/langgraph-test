@@ -2,7 +2,11 @@ import { db, schema } from "$lib/server/db";
 import { eq } from "drizzle-orm";
 import { test } from "vitest";
 
-export const aiTest = test.extend({
+interface AITextContent {
+    thread: { id: string };
+}
+
+export const aiTest = test.extend<AITextContent>({
     // biome-ignore lint/correctness/noEmptyPattern: As per vitest example
     thread: async ({}, use) => {
         const results = await db
