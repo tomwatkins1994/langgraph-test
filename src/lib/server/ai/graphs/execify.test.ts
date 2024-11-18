@@ -30,4 +30,25 @@ describe.concurrent("Execify Graph", () => {
             expect(score).toBe("yes");
         }
     );
+
+    aiTest(
+        "Should answer from the web",
+        { timeout: 20_000 },
+        async ({ thread }) => {
+            const question =
+                "What is the most recent community event Execify was part of?";
+            const state = await execifyGraph.invoke(
+                {
+                    messages: [new HumanMessage(question)],
+                },
+                { configurable: { thread_id: thread.id } }
+            );
+
+            expect(state.webSearched).toBe(true);
+
+            const answer = state.messages[state.messages.length - 1];
+            const { score } = await gradeAnswer(question, answer);
+            expect(score).toBe("yes");
+        }
+    );
 });
