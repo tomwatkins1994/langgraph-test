@@ -1,4 +1,8 @@
-import { AIMessage, type BaseMessage } from "@langchain/core/messages";
+import {
+    AIMessage,
+    RemoveMessage,
+    type BaseMessage,
+} from "@langchain/core/messages";
 import { MemoryVectorStore } from "langchain/vectorstores/memory";
 import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import { TavilySearchResults } from "@langchain/community/tools/tavily_search";
@@ -14,13 +18,15 @@ import { pgCheckpointer } from "../pg-peristance";
 import { Document, type DocumentInterface } from "@langchain/core/documents";
 import { documentGraderGraph } from "./document-grader";
 
+// Graph State
+
 const StateAnnotation = Annotation.Root({
     messages: Annotation<BaseMessage[]>({
         reducer: (x, y) => x.concat(y),
     }),
     question: Annotation<string>(),
     // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-    documents: Annotation<DocumentInterface<Record<string, any>>[]>({
+    documents: Annotation<DocumentInterface<Record<string, any>>[] | null>({
         reducer: (x, y) => {
             let docs = x;
             if (x === null) {
@@ -29,26 +35,49 @@ const StateAnnotation = Annotation.Root({
             if (y === null) {
                 return [];
             }
-            return docs.concat(y);
+            return (docs || []).concat(y);
         },
+        default: () => [],
     }),
-    // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-    relevantDocuments: Annotation<DocumentInterface<Record<string, any>>[]>({
+    relevantDocuments: Annotation<
+        // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+        DocumentInterface<Record<string, any>>[] | null
+    >({
         reducer: (x, y) => {
             if (y === null) {
                 return [];
             }
-            return x.concat(y);
+            return (x || []).concat(y);
         },
+        default: () => [],
     }),
     webSearched: Annotation<boolean>(),
 });
+
+type StateUpdate = Partial<typeof StateAnnotation.State>;
+
+// Models
 
 const model = new ChatOpenAI({
     model: "gpt-4o-mini",
     openAIApiKey: env.OPENAI_API_KEY,
     temperature: 0,
 });
+
+// Nodes
+
+async function getQuestionNode(
+    state: typeof StateAnnotation.State
+): Promise<StateUpdate> {
+    const question = state.messages[state.messages.length - 1];
+
+    return {
+        question: String(question.content),
+        documents: null,
+        relevantDocuments: null,
+        webSearched: false,
+    };
+}
 
 // PDF Vector Store
 
@@ -64,7 +93,9 @@ const vectorStore = await MemoryVectorStore.fromDocuments(
 );
 const pdfRetriever = vectorStore.asRetriever();
 
-async function pdfRetrieverNode(state: typeof StateAnnotation.State) {
+async function pdfRetrieverNode(
+    state: typeof StateAnnotation.State
+): Promise<StateUpdate> {
     console.log("Searching PDFs");
     const retrievedDocs = await pdfRetriever.invoke(state.question);
 
@@ -78,7 +109,9 @@ const tavilySearch = new TavilySearchResults({
     apiKey: env.TAVILY_API_KEY,
 });
 
-async function webSearchNode(state: typeof StateAnnotation.State) {
+async function webSearchNode(
+    state: typeof StateAnnotation.State
+): Promise<StateUpdate> {
     console.log("Searching the web");
     const retrievedDocs = await tavilySearch.invoke(state.question);
     const documents = (
@@ -100,33 +133,9 @@ async function webSearchNode(state: typeof StateAnnotation.State) {
     return { documents, webSearched: true };
 }
 
-async function getQuestionNode(state: typeof StateAnnotation.State) {
-    const question = state.messages[state.messages.length - 1]?.content;
-    if (!question) {
-        return {};
-    }
-
-    return {
-        question,
-        documents: null,
-        relevantDocuments: null,
-        webSearched: false,
-    };
-}
-
-async function needsMoreContent(state: typeof StateAnnotation.State) {
-    console.log("Checking if we have relevant documents", {
-        relevantDocuments: state.relevantDocuments?.length,
-        webSearched: state.webSearched,
-    });
-    if (state.relevantDocuments?.length > 0 || state.webSearched) {
-        return "generate";
-    }
-
-    return "web_search";
-}
-
-async function generateNode(state: typeof StateAnnotation.State) {
+async function generateNode(
+    state: typeof StateAnnotation.State
+): Promise<StateUpdate> {
     const prompt = await pull<ChatPromptTemplate>("rlm/rag-prompt");
     const ragChain = await createStuffDocumentsChain({
         llm: model.withConfig({
@@ -146,6 +155,22 @@ async function generateNode(state: typeof StateAnnotation.State) {
 
     return { messages: [new AIMessage(response)] };
 }
+
+// Conditonal Edges
+
+async function needsMoreContent(state: typeof StateAnnotation.State) {
+    console.log("Checking if we have relevant documents", {
+        relevantDocuments: state.relevantDocuments?.length,
+        webSearched: state.webSearched,
+    });
+    if ((state.relevantDocuments?.length || 0) > 0 || state.webSearched) {
+        return "generate";
+    }
+
+    return "web_search";
+}
+
+// Workflow
 
 const workflow = new StateGraph(StateAnnotation)
     .addNode("get_question", getQuestionNode)

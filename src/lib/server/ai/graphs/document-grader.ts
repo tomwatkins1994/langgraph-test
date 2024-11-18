@@ -6,6 +6,8 @@ import { Annotation, END, Send, START, StateGraph } from "@langchain/langgraph";
 import { ChatOpenAI } from "@langchain/openai";
 import { z } from "zod";
 
+// Graph State
+
 const StateAnnotation = Annotation.Root({
     question: Annotation<string>(),
     // biome-ignore lint/suspicious/noExplicitAny: <explanation>
@@ -21,11 +23,15 @@ const StateAnnotation = Annotation.Root({
     }),
 });
 
+type StateUpdate = Partial<typeof StateAnnotation.State>;
+
 const DocumentState = Annotation.Root({
     question: Annotation<string>(),
     // biome-ignore lint/suspicious/noExplicitAny: <explanation>
     document: Annotation<DocumentInterface<Record<string, any>>>(),
 });
+
+// Models
 
 const llm = new ChatOpenAI({
     model: "gpt-4o-mini",
@@ -33,7 +39,11 @@ const llm = new ChatOpenAI({
     temperature: 0,
 });
 
-async function graderNode(state: typeof DocumentState.State) {
+// Nodes
+
+async function graderNode(
+    state: typeof DocumentState.State
+): Promise<StateUpdate> {
     const prompt = new PromptTemplate({
         template: `
             You are a grader assessing whether some text is useful to resolve a question. 
@@ -59,9 +69,12 @@ async function graderNode(state: typeof DocumentState.State) {
     });
     if (response.score === "yes") {
         console.log("Adding relevant document");
-        return { relevantDocuments: state.document };
+        return { relevantDocuments: [state.document] };
     }
+    return {};
 }
+
+// Conditional Edges
 
 function gradeDocuments(state: typeof StateAnnotation.State) {
     const nodes = state.documents.map(document => {
@@ -70,6 +83,8 @@ function gradeDocuments(state: typeof StateAnnotation.State) {
 
     return nodes;
 }
+
+// Workflow
 
 const workflow = new StateGraph(StateAnnotation)
     .addNode("grader", graderNode)
