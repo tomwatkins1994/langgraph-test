@@ -20,6 +20,7 @@ const StateAnnotation = Annotation.Root({
             }
             return x.concat(y);
         },
+        default: () => [],
     }),
 });
 
@@ -47,7 +48,7 @@ async function graderNode(
     const prompt = new PromptTemplate({
         template: `
             You are a grader assessing whether some text is useful to resolve a question. 
-            Give a binary score 'yes' or 'no' to indicate whether the text is useful to resolve a question. 
+            Give a binary score 'yes' or 'no' to indicate whether the text is useful to resolve the question provided. 
             Provide the binary score as JSON with a single key 'score' and no explanation for why the score was given.
 
             Here is the question: {question}
