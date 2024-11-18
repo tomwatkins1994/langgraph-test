@@ -38,7 +38,7 @@ describe.concurrent("Document Grader", () => {
         expect(state.relevantDocuments.length).toBe(0);
     });
 
-    test("Should find document some documents relevant", async () => {
+    test("Should handle multiple documents", async () => {
         const state = await documentGraderGraph.invoke({
             question,
             documents: [
