@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 import { Document } from "@langchain/core/documents";
 import { documentGraderGraph } from "./document-grader";
 
-describe.concurrent("Document Grader", () => {
+describe.concurrent("Document Grader Graph", () => {
     const question =
         "What factors contributed to the decline of the Roman Empire?";
 
