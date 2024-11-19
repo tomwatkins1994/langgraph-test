@@ -1,7 +1,11 @@
 import { error } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 import type { BaseMessage } from "@langchain/core/messages";
-import { AIMessage, HumanMessage } from "@langchain/core/messages";
+import {
+    AIMessage,
+    AIMessageChunk,
+    HumanMessage,
+} from "@langchain/core/messages";
 import { db, schema } from "$lib/server/db";
 import { eq } from "drizzle-orm";
 import { execifyWithToolsGraph } from "$lib/server/ai/graphs/execify-with-tools";
@@ -18,21 +22,30 @@ export const load: PageServerLoad = async ({ params }) => {
         configurable: { thread_id: params.threadId },
     });
 
-    const messages =
-        state.values.messages?.map((message: BaseMessage) => {
-            if (message instanceof HumanMessage) {
-                return {
-                    role: "user",
-                    content: message.content,
-                };
-            }
-            if (message instanceof AIMessage) {
-                return {
-                    role: "assistant",
-                    content: message.content,
-                };
-            }
-        }) || [];
+    const messages: { role: "user" | "assistant"; content: string }[] = [];
+    for (const message of (state.values.messages || []) as BaseMessage[]) {
+        if (
+            typeof message.content !== "string" ||
+            message.content.length === 0
+        ) {
+            continue;
+        }
+
+        if (message instanceof HumanMessage) {
+            messages.push({
+                role: "user",
+                content: message.content,
+            });
+        } else if (
+            message instanceof AIMessage ||
+            message instanceof AIMessageChunk
+        ) {
+            messages.push({
+                role: "assistant",
+                content: message.content,
+            });
+        }
+    }
 
     return { thread, messages };
 };
