@@ -7,8 +7,7 @@ import { END, START, StateGraph } from "@langchain/langgraph";
 import { Annotation } from "@langchain/langgraph";
 import { createStuffDocumentsChain } from "langchain/chains/combine_documents";
 import { StringOutputParser } from "@langchain/core/output_parsers";
-import { pull } from "langchain/hub";
-import type { ChatPromptTemplate } from "@langchain/core/prompts";
+import { PromptTemplate } from "@langchain/core/prompts";
 import { env } from "$env/dynamic/private";
 import { pgCheckpointer } from "../pg-peristance";
 import { Document, type DocumentInterface } from "@langchain/core/documents";
@@ -132,7 +131,18 @@ async function webSearchNode(
 async function generateNode(
     state: typeof StateAnnotation.State
 ): Promise<StateUpdate> {
-    const prompt = await pull<ChatPromptTemplate>("rlm/rag-prompt");
+    const prompt = new PromptTemplate({
+        template: `
+            You are an assistant for question-answering tasks. 
+            Use the following pieces of retrieved context to answer the question. 
+            If you don't know the answer, just say that you don't know. Use three sentences maximum and keep the answer concise.
+
+            Question: {question} 
+            Context: {context} 
+            Answer:
+        `,
+        inputVariables: ["question", "context"],
+    });
     const ragChain = await createStuffDocumentsChain({
         llm: model.withConfig({
             tags: ["final_node"],
