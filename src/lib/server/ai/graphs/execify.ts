@@ -1,8 +1,4 @@
-import {
-    AIMessage,
-    RemoveMessage,
-    type BaseMessage,
-} from "@langchain/core/messages";
+import { AIMessage, type BaseMessage } from "@langchain/core/messages";
 import { MemoryVectorStore } from "langchain/vectorstores/memory";
 import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import { TavilySearchResults } from "@langchain/community/tools/tavily_search";
@@ -99,9 +95,7 @@ const pdfRetriever = vectorStore.asRetriever();
 async function pdfRetrieverNode(
     state: typeof StateAnnotation.State
 ): Promise<StateUpdate> {
-    console.log("Searching PDFs");
     const retrievedDocs = await pdfRetriever.invoke(state.question);
-
     return { documents: retrievedDocs };
 }
 
@@ -115,7 +109,6 @@ const tavilySearch = new TavilySearchResults({
 async function webSearchNode(
     state: typeof StateAnnotation.State
 ): Promise<StateUpdate> {
-    console.log("Searching the web");
     const retrievedDocs = await tavilySearch.invoke(state.question);
     const documents = (
         (JSON.parse(retrievedDocs) as {
@@ -147,10 +140,6 @@ async function generateNode(
         prompt,
         outputParser: new StringOutputParser(),
     });
-    console.log("Generate", {
-        docs: state.documents?.length,
-        relevantDocs: state.relevantDocuments?.length,
-    });
     const response = await ragChain.invoke({
         question: state.question,
         context: state.relevantDocuments || [],
@@ -162,10 +151,6 @@ async function generateNode(
 // Conditonal Edges
 
 async function needsMoreContent(state: typeof StateAnnotation.State) {
-    console.log("Checking if we have relevant documents", {
-        relevantDocuments: state.relevantDocuments?.length,
-        webSearched: state.webSearched,
-    });
     if ((state.relevantDocuments?.length || 0) > 0 || state.webSearched) {
         return "generate";
     }
