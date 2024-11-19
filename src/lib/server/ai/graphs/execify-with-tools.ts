@@ -92,9 +92,9 @@ async function generateNode(
     const prompt = new PromptTemplate({
         template: `
             You are an assistant for question-answering tasks. 
-            Use the following pieces of retrieved context to answer the question. 
+            Use the provided context to answer the question. 
             If you cant't find the answer in the context, search the web for the answer. 
-            If you still can't find the answer then just say that you don't know. 
+            If dont get an answer from the web search then just say that you don't know the answer to the question. 
             Use three sentences maximum and keep the answer concise.
 
             Question: {question} 

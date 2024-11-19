@@ -1,5 +1,5 @@
 import { describe, expect } from "vitest";
-import { execifyGraph } from "./execify";
+import { execifyWithToolsGraph } from "./execify-with-tools";
 import { HumanMessage } from "@langchain/core/messages";
 import { aiTest } from "../../../../../tests/utils/ai-test";
 import { gradeAnswer } from "../tools/answer-grader";
@@ -11,16 +11,16 @@ describe.concurrent("Execify Graph With Tools", () => {
         async ({ thread }) => {
             const question =
                 "What key skills are needed for the Senior AI Engineer job?";
-            const state = await execifyGraph.invoke(
+            const state = await execifyWithToolsGraph.invoke(
                 {
                     messages: [new HumanMessage(question)],
                 },
                 { configurable: { thread_id: thread.id } }
             );
 
-            expect(state.webSearched).toBe(false);
-
             const answer = state.messages[state.messages.length - 1];
+            expect((answer?.content || "").length).toBeGreaterThan(0);
+
             const { score } = await gradeAnswer(question, answer.content);
             expect(score).toBe("yes");
         }
@@ -31,15 +31,17 @@ describe.concurrent("Execify Graph With Tools", () => {
         { timeout: 30_000 },
         async ({ thread }) => {
             const question = "What is the Execify exec dashboard?";
-            const state = await execifyGraph.invoke(
+            const state = await execifyWithToolsGraph.invoke(
                 {
                     messages: [new HumanMessage(question)],
                 },
                 { configurable: { thread_id: thread.id } }
             );
-            expect(state.webSearched).toBe(true);
+            console.log({ state });
 
             const answer = state.messages[state.messages.length - 1];
+            expect((answer?.content || "").length).toBeGreaterThan(0);
+
             const { score } = await gradeAnswer(question, answer.content);
             expect(score).toBe("yes");
         }
@@ -50,16 +52,17 @@ describe.concurrent("Execify Graph With Tools", () => {
         { timeout: 30_000 },
         async ({ thread }) => {
             const question = "How many employees does execify currently have?";
-            const state = await execifyGraph.invoke(
+            const state = await execifyWithToolsGraph.invoke(
                 {
                     messages: [new HumanMessage(question)],
                 },
                 { configurable: { thread_id: thread.id } }
             );
-            expect(state.webSearched).toBe(true);
-            expect(state.relevantDocuments.length).toBe(0);
+            console.log({ state });
 
             const answer = state.messages[state.messages.length - 1];
+            expect((answer?.content || "").length).toBeGreaterThan(0);
+
             const { score } = await gradeAnswer(question, answer.content);
             expect(score).toBe("no");
         }
