@@ -1,4 +1,4 @@
-import { execifyGraph } from "$lib/server/ai/graphs/execify";
+import { execifyWithToolsGraph } from "$lib/server/ai/graphs/execify-with-tools";
 import { FinalNodeStream } from "$lib/server/ai/utils/final-node-stream";
 import { HumanMessage } from "@langchain/core/messages";
 import type { RequestHandler } from "@sveltejs/kit";
@@ -7,7 +7,7 @@ export const POST: RequestHandler = async ({ request, params }) => {
     try {
         const { message } = await request.json();
 
-        const eventStream = execifyGraph
+        const eventStream = execifyWithToolsGraph
             .withConfig({ configurable: { thread_id: params.threadId } })
             .streamEvents(
                 { messages: [new HumanMessage(message)] },

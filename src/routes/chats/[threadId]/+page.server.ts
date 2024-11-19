@@ -1,10 +1,10 @@
 import { error } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
-import { execifyGraph } from "$lib/server/ai/graphs/execify";
 import type { BaseMessage } from "@langchain/core/messages";
 import { AIMessage, HumanMessage } from "@langchain/core/messages";
 import { db, schema } from "$lib/server/db";
 import { eq } from "drizzle-orm";
+import { execifyWithToolsGraph } from "$lib/server/ai/graphs/execify-with-tools";
 
 export const load: PageServerLoad = async ({ params }) => {
     const thread = await db.query.threads.findFirst({
@@ -14,7 +14,7 @@ export const load: PageServerLoad = async ({ params }) => {
         error(404, "Not found");
     }
 
-    const state = await execifyGraph.getState({
+    const state = await execifyWithToolsGraph.getState({
         configurable: { thread_id: params.threadId },
     });
 
