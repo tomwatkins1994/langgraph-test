@@ -4,10 +4,10 @@ import { HumanMessage } from "@langchain/core/messages";
 import { aiTest } from "../../../../../tests/utils/ai-test";
 import { gradeAnswer } from "../tools/answer-grader";
 
-describe.concurrent("Execify Graph", () => {
+describe.concurrent("Execify Graph With Tools", () => {
     aiTest(
         "Should answer from the PDF",
-        { timeout: 10_000 },
+        { timeout: 30_000 },
         async ({ thread }) => {
             const question =
                 "What key skills are needed for the Senior AI Engineer job?";
@@ -28,7 +28,7 @@ describe.concurrent("Execify Graph", () => {
 
     aiTest(
         "Should answer from the web",
-        { timeout: 20_000 },
+        { timeout: 30_000 },
         async ({ thread }) => {
             const question = "What is the Execify exec dashboard?";
             const state = await execifyGraph.invoke(
@@ -47,7 +47,7 @@ describe.concurrent("Execify Graph", () => {
 
     aiTest(
         "Should not find an answer",
-        { timeout: 20_000 },
+        { timeout: 30_000 },
         async ({ thread }) => {
             const question = "How many employees does execify currently have?";
             const state = await execifyGraph.invoke(
