@@ -27,7 +27,7 @@ type StateUpdate = Partial<typeof StateAnnotation.State>;
 const tools = [pdfSearchTool, webSearchTool];
 const toolNode = new ToolNode(tools);
 
-const model = new ChatOpenAI({
+const llm = new ChatOpenAI({
     model: "gpt-4o-mini",
     openAIApiKey: env.OPENAI_API_KEY,
     temperature: 0,
@@ -45,7 +45,7 @@ async function generateNode(
         If you still don't know the answer after the first web search, just say that you don't know.
         Use three sentences maximum and keep the answer concise.`;
     const systemMessage = new SystemMessage(systemTemplate);
-    const response = await model
+    const response = await llm
         .withConfig({ tags: ["final_node"] })
         .invoke([systemMessage, ...state.messages]);
 
