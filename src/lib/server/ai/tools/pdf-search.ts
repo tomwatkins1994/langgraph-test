@@ -4,6 +4,7 @@ import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { tool } from "@langchain/core/tools";
 import { ChatOpenAI, OpenAIEmbeddings } from "@langchain/openai";
 import { createStuffDocumentsChain } from "langchain/chains/combine_documents";
+import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import { createRetrievalChain } from "langchain/chains/retrieval";
 import { MemoryVectorStore } from "langchain/vectorstores/memory";
 import { z } from "zod";
@@ -16,8 +17,13 @@ const llm = new ChatOpenAI({
 
 const loader = new PDFLoader("src/Execify - Senior AI Engineer Job Spec.pdf");
 const docs = await loader.load();
+const textSplitter = new RecursiveCharacterTextSplitter({
+    chunkSize: 200,
+    chunkOverlap: 50,
+});
+const splits = await textSplitter.splitDocuments(docs);
 const vectorStore = await MemoryVectorStore.fromDocuments(
-    docs,
+    splits,
     new OpenAIEmbeddings({
         model: "text-embedding-3-small",
         openAIApiKey: env.OPENAI_API_KEY,

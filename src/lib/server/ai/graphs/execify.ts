@@ -13,6 +13,7 @@ import { Document, type DocumentInterface } from "@langchain/core/documents";
 import { documentGraderGraph } from "./document-grader";
 import { setupLangsmith } from "../utils/setup-langsmith";
 import { tavilySearch } from "../tools/web-search";
+import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 
 setupLangsmith();
 
@@ -81,9 +82,13 @@ async function getQuestionNode(
 
 const loader = new PDFLoader("src/Execify - Senior AI Engineer Job Spec.pdf");
 const docs = await loader.load();
-
+const textSplitter = new RecursiveCharacterTextSplitter({
+    chunkSize: 200,
+    chunkOverlap: 50,
+});
+const splits = await textSplitter.splitDocuments(docs);
 const vectorStore = await MemoryVectorStore.fromDocuments(
-    docs,
+    splits,
     new OpenAIEmbeddings({
         model: "text-embedding-3-small",
         openAIApiKey: env.OPENAI_API_KEY,
