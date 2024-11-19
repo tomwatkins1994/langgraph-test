@@ -54,7 +54,7 @@ async function generateNode(
 
 // Conditonal Edges
 
-function shouldContinue(state: typeof StateAnnotation.State) {
+function continueOrUseTool(state: typeof StateAnnotation.State) {
     const messages = state.messages;
     const lastMessage = messages[messages.length - 1] as AIMessage;
 
@@ -71,7 +71,7 @@ const workflow = new StateGraph(StateAnnotation)
     .addNode("generate", generateNode)
     .addNode("tools", toolNode)
     .addEdge(START, "generate")
-    .addConditionalEdges("generate", shouldContinue)
+    .addConditionalEdges("generate", continueOrUseTool)
     .addEdge("tools", "generate")
     .addEdge("generate", END);
 
