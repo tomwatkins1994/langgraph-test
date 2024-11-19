@@ -42,7 +42,7 @@ async function generateNode(
         You are an assistant for question-answering tasks. 
         Always try and find the answer by searching in the PDF before looking elsewhere.
         If you cannot find the answer in the PDF then search for the answer on the web.
-        If you still don't know the answer, just say that you don't know.
+        If you still don't know the answer after the first web search, just say that you don't know.
         Use three sentences maximum and keep the answer concise.`;
     const systemMessage = new SystemMessage(systemTemplate);
     const response = await model.invoke([systemMessage, ...state.messages]);
