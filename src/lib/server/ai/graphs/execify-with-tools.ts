@@ -9,6 +9,7 @@ import { setupLangsmith } from "../utils/setup-langsmith";
 import { webSearchTool } from "../tools/web-search";
 import { ToolNode } from "@langchain/langgraph/prebuilt";
 import { pdfSearchTool } from "../tools/pdf-search";
+import { convertToOpenAITool } from "@langchain/core/utils/function_calling";
 
 setupLangsmith();
 
@@ -31,7 +32,7 @@ const llm = new ChatOpenAI({
     model: "gpt-4o-mini",
     openAIApiKey: env.OPENAI_API_KEY,
     temperature: 0,
-}).bindTools(tools);
+}).bind({ tools: tools.map(tool => convertToOpenAITool(tool)) });
 
 // Nodes
 
