@@ -10,7 +10,7 @@ export const tavilySearch = new TavilySearchResults({
 
 export const webSearchTool = tool(
     async ({ query }) => {
-        const results = await tavilySearch.invoke({ query });
+        const results = await tavilySearch.invoke({ input: query });
         return results;
     },
     {
