@@ -45,9 +45,7 @@ async function generateNode(
         If you still don't know the answer, just say that you don't know.
         Use three sentences maximum and keep the answer concise.`;
     const systemMessage = new SystemMessage(systemTemplate);
-    const response = await model
-        .withConfig({ tags: ["final_node"] })
-        .invoke([systemMessage, ...state.messages]);
+    const response = await model.invoke([systemMessage, ...state.messages]);
 
     return { messages: [response] };
 }
