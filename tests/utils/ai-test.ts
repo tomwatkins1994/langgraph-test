@@ -17,7 +17,7 @@ export const aiTest = test.extend<AITextContent>({
         const thread = results[0];
 
         // Use the fixture value
-        await use(thread);
+        await use(thread).catch();
 
         // Delete the thread after the test
         db.delete(schema.threads).where(eq(schema.threads.id, thread.id));
