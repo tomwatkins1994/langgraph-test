@@ -1,7 +1,6 @@
 import { AIMessage, type BaseMessage } from "@langchain/core/messages";
 import { MemoryVectorStore } from "langchain/vectorstores/memory";
 import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
-import { TavilySearchResults } from "@langchain/community/tools/tavily_search";
 import { ChatOpenAI, OpenAIEmbeddings } from "@langchain/openai";
 import { END, START, StateGraph } from "@langchain/langgraph";
 import { Annotation } from "@langchain/langgraph";
