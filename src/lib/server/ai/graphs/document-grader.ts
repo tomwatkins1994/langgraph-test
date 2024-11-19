@@ -14,11 +14,11 @@ const StateAnnotation = Annotation.Root({
     documents: Annotation<DocumentInterface<Record<string, any>>[]>(),
     // biome-ignore lint/suspicious/noExplicitAny: <explanation>
     relevantDocuments: Annotation<DocumentInterface<Record<string, any>>[]>({
-        reducer: (x, y) => {
-            if (y === null) {
+        reducer: (state, update) => {
+            if (update === null) {
                 return [];
             }
-            return x.concat(y);
+            return state.concat(update);
         },
         default: () => [],
     }),

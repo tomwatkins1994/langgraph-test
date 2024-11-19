@@ -16,7 +16,7 @@ setupLangsmith();
 
 const StateAnnotation = Annotation.Root({
     messages: Annotation<BaseMessage[]>({
-        reducer: (x, y) => x.concat(y),
+        reducer: (state, update) => state.concat(update),
     }),
 });
 

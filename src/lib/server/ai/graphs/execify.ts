@@ -21,20 +21,20 @@ setupLangsmith();
 
 const StateAnnotation = Annotation.Root({
     messages: Annotation<BaseMessage[]>({
-        reducer: (x, y) => x.concat(y),
+        reducer: (state, update) => state.concat(update),
     }),
     question: Annotation<string>(),
     // biome-ignore lint/suspicious/noExplicitAny: <explanation>
     documents: Annotation<DocumentInterface<Record<string, any>>[] | null>({
-        reducer: (x, y) => {
-            let docs = x;
-            if (x === null) {
+        reducer: (state, update) => {
+            let docs = state;
+            if (state === null) {
                 docs = [];
             }
-            if (y === null) {
+            if (update === null) {
                 return [];
             }
-            return (docs || []).concat(y);
+            return (docs || []).concat(update);
         },
         default: () => [],
     }),
