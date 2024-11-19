@@ -13,6 +13,7 @@ import { pgCheckpointer } from "../pg-peristance";
 import { Document, type DocumentInterface } from "@langchain/core/documents";
 import { documentGraderGraph } from "./document-grader";
 import { setupLangsmith } from "../utils/setup-langsmith";
+import { tavilySearch } from "../tools/web-search";
 
 setupLangsmith();
 
@@ -99,11 +100,6 @@ async function pdfRetrieverNode(
 }
 
 // Web Search
-
-const tavilySearch = new TavilySearchResults({
-    maxResults: 2,
-    apiKey: env.TAVILY_API_KEY,
-});
 
 async function webSearchNode(
     state: typeof StateAnnotation.State
