@@ -6,7 +6,7 @@
 
 <style>
     .rotating {
-      animation: rotate 2s linear infinite; /* Animation properties */
+      animation: rotate 2s linear infinite;
     }
   
     @keyframes rotate {
