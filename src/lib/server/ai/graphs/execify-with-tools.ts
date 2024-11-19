@@ -11,7 +11,7 @@ import { env } from "$env/dynamic/private";
 import { pgCheckpointer } from "../pg-peristance";
 import type { DocumentInterface } from "@langchain/core/documents";
 import { setupLangsmith } from "../utils/setup-langsmith";
-import { tavilySearch } from "../tools/web-search";
+import { webSearchTool } from "../tools/web-search";
 import { ToolNode } from "@langchain/langgraph/prebuilt";
 
 setupLangsmith();
@@ -43,7 +43,7 @@ type StateUpdate = Partial<typeof StateAnnotation.State>;
 
 // Models
 
-const tools = [tavilySearch];
+const tools = [webSearchTool];
 const toolNode = new ToolNode(tools);
 
 const model = new ChatOpenAI({
