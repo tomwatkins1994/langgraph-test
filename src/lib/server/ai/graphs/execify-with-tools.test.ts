@@ -9,8 +9,7 @@ describe.concurrent("Execify Graph With Tools", () => {
         "Should answer from the PDF",
         { timeout: 30_000 },
         async ({ thread }) => {
-            const question =
-                "What key skills are needed for the Senior AI Engineer job?";
+            const question = "Where are Execify headquartered?";
             const state = await execifyWithToolsGraph.invoke(
                 {
                     messages: [new HumanMessage(question)],
@@ -30,7 +29,7 @@ describe.concurrent("Execify Graph With Tools", () => {
         "Should answer from the web",
         { timeout: 30_000 },
         async ({ thread }) => {
-            const question = "What is the Execify exec dashboard?";
+            const question = "What is the Execify Contact Collector?";
             const state = await execifyWithToolsGraph.invoke(
                 {
                     messages: [new HumanMessage(question)],
@@ -51,7 +50,7 @@ describe.concurrent("Execify Graph With Tools", () => {
         "Should not find an answer",
         { timeout: 30_000 },
         async ({ thread }) => {
-            const question = "How many employees does execify currently have?";
+            const question = "How many people do execify currently employ?";
             const state = await execifyWithToolsGraph.invoke(
                 {
                     messages: [new HumanMessage(question)],
