@@ -17,6 +17,9 @@ import { env } from "$env/dynamic/private";
 import { pgCheckpointer } from "../pg-peristance";
 import { Document, type DocumentInterface } from "@langchain/core/documents";
 import { documentGraderGraph } from "./document-grader";
+import { setupLangsmith } from "../utils/setup-langsmith";
+
+setupLangsmith();
 
 // Graph State
 
