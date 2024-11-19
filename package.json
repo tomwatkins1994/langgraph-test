@@ -33,6 +33,7 @@
     "drizzle-orm": "^0.36.3",
     "langchain": "^0.3.5",
     "pdf-parse": "^1.1.1",
+    "pg": "^8.13.1",
     "postgres": "^3.4.4",
     "zod": "^3.23.8"
   },
@@ -41,6 +42,7 @@
     "@sveltejs/adapter-auto": "^3.0.0",
     "@sveltejs/kit": "^2.0.0",
     "@sveltejs/vite-plugin-svelte": "^4.0.0",
+    "@types/pg": "^8.11.10",
     "@vitest/ui": "^2.1.5",
     "autoprefixer": "^10.4.20",
     "dotenv-cli": "^7.4.2",
