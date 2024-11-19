@@ -1,7 +1,7 @@
 <script lang="ts">
 import type { PageData } from "./$types";
 import { onMount } from "svelte";
-import { SendIcon } from "lucide-svelte";
+import SendIcon from "$lib/components/SendIcon.svelte";
 import LoadingIcon from "$lib/components/LoadingIcon.svelte";
 
 let { data }: { data: PageData } = $props();
