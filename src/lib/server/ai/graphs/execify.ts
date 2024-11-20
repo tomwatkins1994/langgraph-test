@@ -65,7 +65,7 @@ const model = new ChatOpenAI({
 
 // Nodes
 
-async function getQuestionNode(
+async function getQuestionAgentNode(
     state: typeof StateAnnotation.State
 ): Promise<StateUpdate> {
     const question = state.messages[state.messages.length - 1];
@@ -96,7 +96,7 @@ const vectorStore = await MemoryVectorStore.fromDocuments(
 );
 const pdfRetriever = vectorStore.asRetriever();
 
-async function pdfRetrieverNode(
+async function pdfRetrieverAgentNode(
     state: typeof StateAnnotation.State
 ): Promise<StateUpdate> {
     const retrievedDocs = await pdfRetriever.invoke(state.question);
@@ -105,7 +105,7 @@ async function pdfRetrieverNode(
 
 // Web Search
 
-async function webSearchNode(
+async function webSearchAgentNode(
     state: typeof StateAnnotation.State
 ): Promise<StateUpdate> {
     const retrievedDocs = await tavilySearch.invoke(state.question);
@@ -128,7 +128,7 @@ async function webSearchNode(
     return { documents, webSearched: true };
 }
 
-async function generateNode(
+async function generateAnswerAgentNode(
     state: typeof StateAnnotation.State
 ): Promise<StateUpdate> {
     const prompt = new PromptTemplate({
@@ -162,25 +162,25 @@ async function generateNode(
 
 async function needsMoreContent(state: typeof StateAnnotation.State) {
     if ((state.relevantDocuments?.length || 0) > 0 || state.webSearched) {
-        return "generate";
+        return "generate_answer_agent";
     }
 
-    return "web_search";
+    return "web_search_agent";
 }
 
 // Workflow
 
 const workflow = new StateGraph(StateAnnotation)
-    .addNode("get_question", getQuestionNode)
-    .addNode("retriever", pdfRetrieverNode)
+    .addNode("get_question_agent", getQuestionAgentNode)
+    .addNode("retriever_agent", pdfRetrieverAgentNode)
     .addNode("document_grader", documentGraderGraph)
-    .addNode("web_search", webSearchNode)
-    .addNode("generate", generateNode)
-    .addEdge(START, "get_question")
-    .addEdge("get_question", "retriever")
-    .addEdge("retriever", "document_grader")
+    .addNode("web_search_agent", webSearchAgentNode)
+    .addNode("generate_answer_agent", generateAnswerAgentNode)
+    .addEdge(START, "get_question_agent")
+    .addEdge("get_question_agent", "retriever_agent")
+    .addEdge("retriever_agent", "document_grader")
     .addConditionalEdges("document_grader", needsMoreContent)
-    .addEdge("web_search", "document_grader")
-    .addEdge("generate", END);
+    .addEdge("web_search_agent", "document_grader")
+    .addEdge("generate_answer_agent", END);
 
 export const execifyGraph = workflow.compile({ checkpointer: pgCheckpointer });

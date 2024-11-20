@@ -36,7 +36,7 @@ const llm = new ChatOpenAI({
 
 // Nodes
 
-async function generateNode(
+async function agentNode(
     state: typeof StateAnnotation.State
 ): Promise<StateUpdate> {
     const systemTemplate = `
@@ -56,12 +56,12 @@ async function generateNode(
 // Workflow
 
 const workflow = new StateGraph(StateAnnotation)
-    .addNode("generate", generateNode)
+    .addNode("agent", agentNode)
     .addNode("tools", toolNode)
-    .addEdge(START, "generate")
-    .addConditionalEdges("generate", toolsCondition)
-    .addEdge("tools", "generate")
-    .addEdge("generate", END);
+    .addEdge(START, "agent")
+    .addConditionalEdges("agent", toolsCondition)
+    .addEdge("tools", "agent")
+    .addEdge("agent", END);
 
 export const execifyWithToolsGraph = workflow.compile({
     checkpointer: pgCheckpointer,

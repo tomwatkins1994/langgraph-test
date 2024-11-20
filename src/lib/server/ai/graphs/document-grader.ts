@@ -42,7 +42,7 @@ const llm = new ChatOpenAI({
 
 // Nodes
 
-async function graderNode(
+async function graderAgentNode(
     state: typeof DocumentState.State
 ): Promise<StateUpdate> {
     const prompt = new PromptTemplate({
@@ -88,8 +88,8 @@ function gradeDocuments(state: typeof StateAnnotation.State): Send[] {
 // Workflow
 
 const workflow = new StateGraph(StateAnnotation)
-    .addNode("grader", graderNode)
+    .addNode("grader_agent", graderAgentNode)
     .addConditionalEdges(START, gradeDocuments)
-    .addEdge("grader", END);
+    .addEdge("grader_agent", END);
 
 export const documentGraderGraph = workflow.compile();
